@@ -4,7 +4,9 @@
  */
 package clientserver_udp;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -17,36 +19,44 @@ import java.net.UnknownHostException;
 public class UDPClient {
     
     public static void main(String[] args) {
-       int porta = 1000;
+       int serverPort = 6789;
        InetAddress serverAddress;
+       byte[] bufferIN = new byte[1024]; //buffer spedizione
+       byte[] bufferOUT = new byte[1024]; //buffer ricezione
        DatagramSocket dSocket;
        DatagramPacket inPacket;
        DatagramPacket outPacket;
-       byte[] buffer;
-       String message = "Richiesta data e ora";
-       String response;
+       BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
        
        try{
            serverAddress = InetAddress.getLocalHost();
-           System.out.println("Indirizzo del server trovato");
            dSocket = new DatagramSocket();
-           outPacket = new DatagramPacket(message.getBytes(), message.length(), serverAddress, porta);
-           dSocket.send(outPacket);
-           buffer = new byte[256];
-           inPacket = new DatagramPacket(buffer, buffer.length);
+           System.out.println("Client pronto all'utilizzo - iniserire un dato da inviare:");
+           //preparazione al messaggio da spedire
+           String daSpedire = input.readLine();
+           bufferOUT = daSpedire.getBytes();
+           //trasmissione del dato al server
+           inPacket = new DatagramPacket(bufferOUT, bufferOUT.length, serverAddress, serverPort);
+           dSocket.send(inPacket);
+           //ricezione del dato dal server
+           outPacket = new DatagramPacket(bufferIN, bufferIN.length);
            dSocket.receive(inPacket);
-           response = new String(inPacket.getData(), 0, inPacket.getLength());
-           //
-           System.out.println("Connessione stabilita");
-           System.out.println("Data e ora del server");
-           System.out.println("Connessione chiusa");
+           String ricevuto = new String(outPacket.getData());
+           //elaborazione dei dati ricevuti
+           int numCaratteri = outPacket.getLength();
+           // per eliminare i caratteri in eccesso
+           ricevuto = ricevuto.substring(0,numCaratteri);
+           System.out.println("dal Server: " + ricevuto);
            
-       } catch (UnknownHostException e) {
-           e.printStackTrace();
-       } catch (IOException e) {
-           e.printStackTrace();   
+           //termina elaborazione
+           dSocket.close();
+           
+       } catch (UnknownHostException ex) {
+           System.err.println(ex.getMessage());
+           
+       } catch (IOException ex) {
+           System.err.println(ex.getMessage());   
        }
        
-    }
-    
+    }  
 }
