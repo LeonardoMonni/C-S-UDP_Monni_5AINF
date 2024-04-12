@@ -4,13 +4,8 @@
  */
 package clientserver_udp;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.io.*;
+import java.net.*;
 
 /**
  *
@@ -21,8 +16,8 @@ public class UDPClient {
     public static void main(String[] args) {
        int serverPort = 6789;
        InetAddress serverAddress;
-       byte[] bufferIN = new byte[1024]; //buffer spedizione
-       byte[] bufferOUT = new byte[1024]; //buffer ricezione
+       byte[] bufferIN = new byte[256]; //buffer spedizione
+       byte[] bufferOUT = new byte[256]; //buffer ricezione
        DatagramSocket dSocket;
        DatagramPacket inPacket;
        DatagramPacket outPacket;
@@ -31,7 +26,7 @@ public class UDPClient {
        try{
            serverAddress = InetAddress.getLocalHost();
            dSocket = new DatagramSocket();
-           System.out.println("Client pronto all'utilizzo - iniserire un dato da inviare:");
+           System.out.println("Client pronto all'utilizzo - inserire un dato da inviare:");
            //preparazione al messaggio da spedire
            String daSpedire = input.readLine();
            bufferOUT = daSpedire.getBytes();
@@ -40,7 +35,7 @@ public class UDPClient {
            dSocket.send(inPacket);
            //ricezione del dato dal server
            outPacket = new DatagramPacket(bufferIN, bufferIN.length);
-           dSocket.receive(inPacket);
+           dSocket.receive(outPacket);
            String ricevuto = new String(outPacket.getData());
            //elaborazione dei dati ricevuti
            int numCaratteri = outPacket.getLength();
@@ -53,6 +48,9 @@ public class UDPClient {
            
        } catch (UnknownHostException ex) {
            System.err.println(ex.getMessage());
+           
+       } catch (SocketException ex) {
+           System.err.println(ex.getMessage());   
            
        } catch (IOException ex) {
            System.err.println(ex.getMessage());   
